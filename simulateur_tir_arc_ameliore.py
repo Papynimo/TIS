@@ -17,10 +17,10 @@ Ce simulateur calcule la trajectoire d'une flèche selon :
 """)
 
 # Entrées utilisateur
-force_lbs = st.slider("🎯 Force de l’arc (livres)", 20, 80, 40)
-draw_length_in = st.slider("📏 Allonge de l’archer (pouces)", 24, 32, 28)
+force_lbs = st.slider("🎯 Force de l’arc (livres)", 20, 80, 38)
+draw_length_in = st.slider("📏 Allonge de l’archer (pouces)", 24, 32, 29)
 poids_fleche_g = st.slider("🏹 Poids de la flèche (grammes)", 20, 50, 30)
-hauteur_depart = st.slider("📐 Hauteur initiale de tir (m)", 0.5, 2.0, 1.5)
+hauteur_depart = st.slider("📐 Hauteur initiale de tir (m)", 0.5, 2.0, 1.55)
 angle = st.slider("🧭 Angle de tir (°)", -15, 45, 0, step=5)
 vent = st.slider("🌬️ Vent frontal (m/s, positif = de face)", -10, 10, 0)
 
@@ -39,7 +39,7 @@ diametre_fleche_m = 0.007
 surface = np.pi * (diametre_fleche_m / 2)**2  # surface frontale (m²)
 
 # rendement défini via le slider ci-dessus
-v0 = np.sqrt(2 * rendement * force_N * draw_m / masse_kg)
+v0 = min(np.sqrt(2 * rendement * force_N * draw_m / masse_kg), 70.0)  # Limite v0 à 70 m/s
 theta = np.radians(angle)
 g = 9.81
 
@@ -80,3 +80,4 @@ st.success(f"📏 Distance parcourue : {distance_max:.2f} m")
 st.success(f"⏱️ Temps de vol : {temps_vol:.2f} s")
 
 st.caption("Fait avec ❤️ pour les passionnés de tir à l'arc.")
+
