@@ -1,4 +1,4 @@
-import streamlit as st
+mport streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -24,6 +24,9 @@ hauteur_depart = st.slider("📐 Hauteur initiale de tir (m)", 0.5, 2.0, 1.5)
 angle = st.slider("🧭 Angle de tir (°)", -15, 45, 0, step=5)
 vent = st.slider("🌬️ Vent frontal (m/s, positif = de face)", -10, 10, 0)
 
+# Rendement de l'arc
+rendement = st.slider("⚙️ Rendement de l'arc (%)", 50, 100, 65) / 100.0
+
 # Conversions
 force_N = force_lbs * 4.448
 draw_m = draw_length_in * 0.0254
@@ -35,7 +38,8 @@ rho = 1.225  # Densité de l'air (kg/m^3)
 diametre_fleche_m = 0.007
 surface = np.pi * (diametre_fleche_m / 2)**2  # surface frontale (m²)
 
-v0 = np.sqrt(2 * force_N * draw_m / masse_kg)
+# rendement défini via le slider ci-dessus
+v0 = np.sqrt(2 * rendement * force_N * draw_m / masse_kg)
 theta = np.radians(angle)
 g = 9.81
 
@@ -77,7 +81,6 @@ ax2.set_ylabel("Vitesse (m/s)")
 ax2.set_title("Évolution de la vitesse de la flèche")
 ax2.grid(True)
 st.pyplot(fig2)
-💨 Ajout des frottements + courbe de vitesse
 
 
 st.success(f"📏 Distance parcourue : {distance_max:.2f} m")
