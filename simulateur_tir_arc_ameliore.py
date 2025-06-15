@@ -17,11 +17,11 @@ Ce simulateur calcule la trajectoire d'une flèche selon :
 """)
 
 # Entrées utilisateur
-force_lbs = st.slider("🎯 Force de l’arc (livres)", 20, 80, 38)
-draw_length_in = st.slider("📏 Allonge de l’archer (pouces)", 24, 32, 29)
+force_lbs = st.slider("🎯 Force de l’arc (livres)", 20, 80, 40)
+draw_length_in = st.slider("📏 Allonge de l’archer (pouces)", 24, 32, 28)
 poids_fleche_g = st.slider("🏹 Poids de la flèche (grammes)", 20, 50, 30)
 hauteur_depart = st.slider("📐 Hauteur initiale de tir (m)", 0.5, 2.0, 1.5)
-angle = st.slider("🧭 Angle de tir (°)", -45, 45, 0, step=5)
+angle = st.slider("🧭 Angle de tir (°)", -15, 45, 0, step=5)
 vent = st.slider("🌬️ Vent frontal (m/s, positif = de face)", -10, 10, 0)
 
 # Rendement de l'arc
@@ -75,11 +75,19 @@ st.pyplot(fig)
 
 # Vitesse au cours du temps
 fig2, ax2 = plt.subplots()
-# Sécurité : égaliser tailles pour matplotlib
-min_len = min(len(t), len(v_list))
-t = t[:min_len]
-v_list = v_list[:min_len]
-ax2.plot(t, v_list)
+if 'v_list' in locals() and len(v_list) > 1:
+    min_len = min(len(t), len(v_list))
+    t = t[:min_len]
+    v_list = v_list[:min_len]
+    fig2, ax2 = plt.subplots()
+    ax2.plot(t, v_list)
+    ax2.set_xlabel("Temps (s)")
+    ax2.set_ylabel("Vitesse (m/s)")
+    ax2.set_title("Évolution de la vitesse de la flèche")
+    ax2.grid(True)
+    st.pyplot(fig2)
+else:
+    st.warning("⚠️ La vitesse n’a pas pu être calculée pour cette simulation.")
 ax2.set_xlabel("Temps (s)")
 ax2.set_ylabel("Vitesse (m/s)")
 ax2.set_title("Évolution de la vitesse de la flèche")
