@@ -1,4 +1,4 @@
-import streamlit as st
+mport streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -21,7 +21,7 @@ force_lbs = st.slider("🎯 Force de l’arc (livres)", 20, 80, 38)
 draw_length_in = st.slider("📏 Allonge de l’archer (pouces)", 24, 32, 29)
 poids_fleche_g = st.slider("🏹 Poids de la flèche (grammes)", 20, 50, 30)
 hauteur_depart = st.slider("📐 Hauteur initiale de tir (m)", 0.5, 2.0, 1.55)
-angle = st.slider("🧭 Angle de tir (°)", -45, 45, 0, step=5)
+angle = st.slider("🧭 Angle de tir (°)", -15, 45, 0, step=5)
 vent = st.slider("🌬️ Vent frontal (m/s, positif = de face)", -10, 10, 0)
 
 # Rendement de l'arc
@@ -33,7 +33,7 @@ draw_m = draw_length_in * 0.0254
 masse_kg = poids_fleche_g / 1000  # grammes → kg
 
 # Vitesse initiale
-Cd = 1.0  # Coefficient de traînée plus réaliste pour une flèche  # Coefficient de traînée (forme cylindrique)
+Cd = 1.2  # Augmentation de la traînée pour réduire la portée  # Coefficient de traînée plus réaliste pour une flèche  # Coefficient de traînée (forme cylindrique)
 rho = 1.225  # Densité de l'air (kg/m^3)
 diametre_fleche_m = 0.007
 surface = np.pi * (diametre_fleche_m / 2)**2  # surface frontale (m²)
@@ -75,7 +75,7 @@ st.pyplot(fig)
 
 # Vitesse au cours du temps
 fig2, ax2 = plt.subplots()
-# Courbe de vitesse supprimée pour simplification
+
 ax2.set_xlabel("Temps (s)")
 ax2.set_ylabel("Vitesse (m/s)")
 ax2.set_title("Évolution de la vitesse de la flèche")
