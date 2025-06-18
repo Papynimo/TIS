@@ -20,7 +20,7 @@ force_lbs = st.slider("🎯 Force de l'arc (lbs)", 20, 80, 40)
 draw_length_in = st.slider("📏 Allonge (inches)", 20, 30, 28)
 poids_fleche_g = st.slider("🏹 Poids de la flèche (g)", 20, 50, 30)
 hauteur_depart = st.slider("📐 Hauteur initiale (m)", 0.5, 2.0, 1.5)
-angle_deg = st.slider("🧭 Angle de tir (°)", -15, 45, 0, step=5)  # de -15° à 45°("🧭 Angle de tir (°)", 0, 90, 45)
+angle_deg = st.slider("🧭 Angle de tir (°)", -15, 45, 0, step=5)
 
 # --- Conversions ---
 force_N = force_lbs * 4.44822       # lbs → N
