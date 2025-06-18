@@ -48,8 +48,8 @@ vy       = v0 * np.sin(theta)
 t        = 0.0
 
 # --- Boucle jusqu'à impact ou limites fixes ---
-# On boucle tant que la flèche est au-dessus du sol, et dans les limites de temps et distance
-while y_vals[-1] >= 0 and t < 6.0 and x_vals[-1] < 250.0:
+# On boucle tant que la flèche est au-dessus du sol et dans la limite de temps (6s max)
+while y_vals[-1] >= 0 and t < 6.0:
     # Calcul des accélérations
     v   = np.hypot(vx, vy)
     Fd  = 0.5 * rho * Cd * surface * v**2
@@ -59,16 +59,17 @@ while y_vals[-1] >= 0 and t < 6.0 and x_vals[-1] < 250.0:
     vx += ax * dt
     vy += ay * dt
     # Intégration des positions
-    x_new = x_vals[-1] + vx * dt
-    y_new = y_vals[-1] + vy * dt
+    x_prev, y_prev = x_vals[-1], y_vals[-1]
+    x_new = x_prev + vx * dt
+    y_new = y_prev + vy * dt
     t     += dt
-    # Détection de l'impact
+    # Détection de l'impact au sol
     if y_new < 0:
         # interpolation linéaire pour l'impact
-        dx    = x_new - x_vals[-1]
-        dy    = y_new - y_vals[-1]
-        frac  = -y_vals[-1] / dy if dy != 0 else 0
-        x_imp = x_vals[-1] + frac * dx
+        dx    = x_new - x_prev
+        dy    = y_new - y_prev
+        frac  = -y_prev / dy if dy != 0 else 0
+        x_imp = x_prev + frac * dx
         x_vals.append(x_imp)
         y_vals.append(0.0)
         break
@@ -77,6 +78,8 @@ while y_vals[-1] >= 0 and t < 6.0 and x_vals[-1] < 250.0:
     y_vals.append(y_new)
 
 # --- Résultats ---
+distance = x_vals[-1]
+temps_vol = t
 distance = x_vals[-1]
 temps_vol = t
 distance = x_vals[-1]
@@ -100,5 +103,6 @@ st.success(f"📏 Distance parcourue : {distance:.2f} m")
 st.success(f"⏱️ Temps de vol      : {temps_vol:.2f} s")
 
 st.caption("Fait avec ❤️ pour les passionnés de tir à l'arc")
+
 
 
