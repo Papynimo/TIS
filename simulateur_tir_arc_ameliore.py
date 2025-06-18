@@ -50,7 +50,7 @@ t = 0.0
 
 # --- Boucle de simulation (Euler explicite) ---
 # On limite à 6 s et 250 m max pour éviter les valeurs irréalistes
-while y_vals[-1] >= 0 and t < 6.0 and x_vals[-1] < 250.0:
+while t < 6.0 and x_vals[-1] < 250.0:
     v = np.hypot(vx, vy)
     Fd = 0.5 * rho * Cd * surf * v**2
     ax = - (Fd * vx / v) / masse_kg
@@ -58,13 +58,32 @@ while y_vals[-1] >= 0 and t < 6.0 and x_vals[-1] < 250.0:
     # intégration des vitesses
     vx += ax * dt
     vy += ay * dt
+    # sauvegarde des anciennes positions
+    x_prev, y_prev = x_vals[-1], y_vals[-1]
     # intégration des positions
-    x_vals.append(x_vals[-1] + vx * dt)
-    y_vals.append(y_vals[-1] + vy * dt)
+    x_new = x_prev + vx * dt
+    y_new = y_prev + vy * dt
+    x_vals.append(x_new)
+    y_vals.append(y_new)
     # temps
     t += dt
+    # arrêt si la flèche touche le sol
+    if y_new < 0:
+        # interpolation linéaire pour l'impact au sol
+        dy = y_new - y_prev
+        dx = x_new - x_prev
+        frac = -y_prev / dy if dy != 0 else 0
+        x_impact = x_prev + frac * dx
+        y_impact = 0.0
+        x_vals[-1] = x_impact
+        y_vals[-1] = y_impact
+        break
 
 # --- Calculs finaux ---
+# distance et temps de vol
+# Si on est sorti sans toucher le sol (limite temps ou distance), on prend le dernier point
+distance = x_vals[-1]
+temps_vol = t
 distance = x_vals[-1]
 temps_vol = t
 
@@ -84,3 +103,4 @@ st.success(f"📏 Distance parcourue : {distance:.2f} m")
 st.success(f"⏱️ Temps de vol      : {temps_vol:.2f} s")
 
 st.caption("Fait avec ❤️ pour les passionnés de tir à l'arc")
+
