@@ -1,10 +1,10 @@
+```python
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="Simulateur de tir à l'arc", layout="centered")
-
-st.title("🏹 Simulateur de tir à l'arc amélioré")
+st.title("🏹 Simulateur de tir à l'arc simplifié")
 
 st.markdown("""
 Ce simulateur calcule la trajectoire d'une flèche selon :
@@ -13,70 +13,66 @@ Ce simulateur calcule la trajectoire d'une flèche selon :
 - **Le poids de la flèche** (en grammes)
 - **La hauteur de départ par rapport au sol**
 - **L’angle de tir**
-- **Le vent (en m/s)**
 """)
 
 # Entrées utilisateur
-force_lbs = st.slider("🎯 Force de l’arc (livres)", 20, 80, 38)
-draw_length_in = st.slider("📏 Allonge de l’archer (pouces)", 24, 32, 29)
+force_lbs      = st.slider("🎯 Force de l’arc (livres)",     20, 80, 40)
+draw_length_in = st.slider("📏 Allonge de l’archer (pouces)", 24, 32, 28)
 poids_fleche_g = st.slider("🏹 Poids de la flèche (grammes)", 20, 50, 30)
-hauteur_depart = st.slider("📐 Hauteur initiale de tir (m)", 0.5, 2.0, 1.55)
-angle = st.slider("🧭 Angle de tir (°)", -15, 45, 0, step=5)
-vent = st.slider("🌬️ Vent frontal (m/s, positif = de face)", -10, 10, 0)
+hauteur_depart = st.slider("📐 Hauteur initiale de tir (m)",  0.5,  2.0, 1.5)
+angle_deg      = st.slider("🧭 Angle de tir (°)",           0,  90, 45)
 
-# Rendement de l'arc
-rendement = st.slider("⚙️ Rendement de l'arc (%)", 50, 100, 65) / 100.0
+# Conversions physiques
+force_N  = force_lbs * 4.44822      # livres → newtons
+draw_m   = draw_length_in * 0.0254  # pouces → mètres
+masse_kg = poids_fleche_g / 1000.0  # grammes → kg
+theta    = np.radians(angle_deg)
+g        = 9.81                      # m/s²
 
-# Conversions
-force_N = force_lbs * 4.448
-draw_m = draw_length_in * 0.0254
-masse_kg = poids_fleche_g / 1000  # grammes → kg
+# Vitesse initiale (énergie d’arc sans rendement)
+v0 = np.sqrt(2 * force_N * draw_m / masse_kg)
+# Plafond réaliste de la vitesse
+v0 = min(v0, 70.0)
 
-# Vitesse initiale
-Cd = 1.5  # Traînée augmentée pour limiter la portée  # Augmentation de la traînée pour réduire la portée  # Coefficient de traînée plus réaliste pour une flèche  # Coefficient de traînée (forme cylindrique)
-rho = 1.225  # Densité de l'air (kg/m^3)
-diametre_fleche_m = 0.007
-surface = np.pi * (diametre_fleche_m / 2)**2  # surface frontale (m²)
+# Paramétrage du temps
+dt = 0.01
+x_vals = [0.0]
+y_vals = [0.0]
+t = 0.0
 
-# rendement défini via le slider ci-dessus
-v0 = min(np.sqrt(2 * rendement * force_N * draw_m / masse_kg), 70.0)  # Limite v0 à 70 m/s
-theta = np.radians(angle)
-g = 9.81
-
-# Composantes de vitesse
+# Composantes de la vitesse initiale
 vx = v0 * np.cos(theta)
 vy = v0 * np.sin(theta)
 
-# Calcul de la trajectoire
-t = np.linspace(0, 10, 1000)
-x = vx * t + 0.5 * vent * t**2  # vent comme accélération horizontale
-y = hauteur_depart + vy * t - 0.5 * g * t**2
-
-# On arrête quand la flèche touche le sol
-mask = y >= 0
-x = x[mask]
-y = y[mask]
+# Boucle Euler jusqu'à impact ou limites réalistes
+while y_vals[-1] >= 0 and t < 6.0 and x_vals[-1] < 250.0:
+    # Mise à jour des positions
+    x_new = x_vals[-1] + vx * dt
+    y_new = y_vals[-1] + vy * dt
+    x_vals.append(x_new)
+    y_vals.append(y_new)
+    # Gravité
+    vy = vy - g * dt
+    # Avance temporel
+    t += dt
 
 # Résultats
-temps_vol = t[len(x) - 1]
-distance_max = x[-1]
+distance_max = x_vals[-1]
+temps_vol    = t
 
-
-# Affichage du graphique
+# Affichage de la trajectoire
 fig, ax = plt.subplots()
-ax.plot(x, y, label="Trajectoire")
-ax.plot(x[-1], y[-1], 'ro', label="Impact au sol")
+ax.plot(x_vals, y_vals, label="Trajectoire")
+ax.plot(distance_max, y_vals[-1], 'ro', label="Impact au sol")
 ax.set_xlabel("Distance (m)")
 ax.set_ylabel("Hauteur (m)")
-ax.set_title("Trajectoire simulée de la flèche")
-ax.grid(True)
+ax.set_title("Trajectoire simplifiée de la flèche")
 ax.legend()
 st.pyplot(fig)
 
-# (Graphique de vitesse supprimé)
-
-
+# Résultats clés
 st.success(f"📏 Distance parcourue : {distance_max:.2f} m")
-st.success(f"⏱️ Temps de vol : {temps_vol:.2f} s")
+st.success(f"⏱️ Temps de vol      : {temps_vol:.2f} s")
 
 st.caption("Fait avec ❤️ pour les passionnés de tir à l'arc.")
+```
