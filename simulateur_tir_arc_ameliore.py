@@ -16,89 +16,77 @@ Ce simulateur calcule la trajectoire d'une flèche selon :
 """)
 
 # --- Entrées utilisateur ---
-force_lbs = st.slider("🎯 Force de l'arc (lbs)", 20, 80, 40)
-draw_length_in = st.slider("📏 Allonge (inches)", 20, 30, 28)
-poids_fleche_g = st.slider("🏹 Poids de la flèche (g)", 20, 50, 30)
-hauteur_depart = st.slider("📐 Hauteur initiale (m)", 0.5, 2.0, 1.5)
-angle_deg = st.slider("🧭 Angle de tir (°)", -15, 45, 0, step=5)
+force_lbs       = st.slider("🎯 Force de l'arc (lbs)",        20, 80, 40)
+draw_length_in  = st.slider("📏 Allonge (inches)",           20, 30, 28)
+poids_fleche_g  = st.slider("🏹 Poids de la flèche (g)",     20, 50, 30)
+hauteur_depart  = st.slider("📐 Hauteur initiale (m)",       0.5, 2.0, 1.5)
+angle_deg       = st.slider("🧭 Angle de tir (°)",          -15, 45, 0, step=5)
 
-# --- Conversions ---
-force_N = force_lbs * 4.44822       # lbs → N
-draw_m = draw_length_in * 0.0254    # inches → m
-masse_kg = poids_fleche_g / 1000.0  # g → kg
-theta = np.radians(angle_deg)
-g = 9.81
+# --- Conversions physiques ---
+force_N  = force_lbs * 4.44822       # lbs → N
+draw_m   = draw_length_in * 0.0254    # inches → m
+masse_kg = poids_fleche_g / 1000.0    # g → kg
+theta    = np.radians(angle_deg)
+g        = 9.81                         # m/s²
 
-# --- Vitesse initiale sans rendement ---
+# --- Vitesse initiale sans rendement ni vent ---
 v0 = np.sqrt(2 * force_N * draw_m / masse_kg)
-# Plafonnage réaliste à 70 m/s
-v0 = min(v0, 70.0)
+v0 = min(v0, 70.0)  # Plafonnement à 70 m/s
 
-# --- Paramètres frottements ---
-Cd = 0.47           # coefficient de traînée de la flèche
-rho = 1.225         # densité de l'air (kg/m³)
-diam_f = 0.007      # diamètre approximatif de la flèche (m)
-surf = np.pi*(diam_f/2)**2  # surface frontale
+# --- Frottements d'air ---
+Cd       = 0.47      # coefficient de traînée de la flèche
+rho      = 1.225     # densité de l'air (kg/m³)
+diam_f   = 0.007     # m, diamètre de la flèche
+surface  = np.pi * (diam_f/2)**2
 
-# --- Initialisation de la simulation ---
-dt = 0.01
-x_vals = [0.0]
-y_vals = [hauteur_depart]
-vx = v0 * np.cos(theta)
-vy = v0 * np.sin(theta)
-t = 0.0
+# --- Simulation Euler explicite ---
+dt       = 0.01
+x_vals   = [0.0]
+y_vals   = [hauteur_depart]
+vx       = v0 * np.cos(theta)
+vy       = v0 * np.sin(theta)
+t        = 0.0
 
-# --- Boucle de simulation (Euler explicite) ---
-# On limite à 6 s et 250 m max pour éviter les valeurs irréalistes
-while y_vals[-1] >= 0 and t < 6.0 and x_vals[-1] < 250.0:[-1] < 250.0:
-    v = np.hypot(vx, vy)
-    Fd = 0.5 * rho * Cd * surf * v**2
-    ax = - (Fd * vx / v) / masse_kg
-    ay = -g - (Fd * vy / v) / masse_kg
-    # intégration des vitesses
+# Boucle jusqu'à impact ou limites fixes
+while y_vals[-1] >= 0 and t < 6.0 and x_vals[-1] < 250.0:
+    v   = np.hypot(vx, vy)
+    Fd  = 0.5 * rho * Cd * surface * v**2
+    ax  = - (Fd * vx / v) / masse_kg
+    ay  = -g - (Fd * vy / v) / masse_kg
     vx += ax * dt
     vy += ay * dt
-    # sauvegarde des anciennes positions
     x_prev, y_prev = x_vals[-1], y_vals[-1]
-    # intégration des positions
     x_new = x_prev + vx * dt
     y_new = y_prev + vy * dt
+    t     += dt
+    # Impact au sol par interpolation
+    if y_new < 0:
+        dx    = x_new - x_prev
+        dy    = y_new - y_prev
+        frac  = -y_prev / dy if dy != 0 else 0
+        x_imp = x_prev + frac * dx
+        x_vals.append(x_imp)
+        y_vals.append(0.0)
+        break
     x_vals.append(x_new)
     y_vals.append(y_new)
-    # temps
-    t += dt
-    # arrêt si la flèche touche le sol
-    if y_new < 0:
-        # interpolation linéaire pour l'impact au sol
-        dy = y_new - y_prev
-        dx = x_new - x_prev
-        frac = -y_prev / dy if dy != 0 else 0
-        x_impact = x_prev + frac * dx
-        y_impact = 0.0
-        x_vals[-1] = x_impact
-        y_vals[-1] = y_impact
-        break
 
-# --- Calculs finaux ---
-# distance et temps de vol
-# Si on est sorti sans toucher le sol (limite temps ou distance), on prend le dernier point
-distance = x_vals[-1]
-temps_vol = t
+# --- Résultats ---
 distance = x_vals[-1]
 temps_vol = t
 
-# --- Affichage de la trajectoire ---
+# Affichage de la trajectoire
 fig, ax = plt.subplots()
 ax.plot(x_vals, y_vals, label="Trajectoire")
-ax.plot(distance, y_vals[-1], 'ro', label="Impact")
+ax.plot(distance, 0, 'ro', label="Impact au sol")
 ax.set_xlabel("Distance (m)")
 ax.set_ylabel("Hauteur (m)")
-ax.set_title("Trajectoire de la flèche")
+ax.set_title("Trajectoire simulée de la flèche")
 ax.grid(True)
 ax.legend()
 st.pyplot(fig)
 
-# --- Résultats ---
+# Affichage des résultats
 st.success(f"📏 Distance parcourue : {distance:.2f} m")
 st.success(f"⏱️ Temps de vol      : {temps_vol:.2f} s")
 
