@@ -84,4 +84,3 @@ st.success(f"📏 Distance parcourue : {distance:.2f} m")
 st.success(f"⏱️ Temps de vol      : {temps_vol:.2f} s")
 
 st.caption("Fait avec ❤️ pour les passionnés de tir à l'arc")
-```
