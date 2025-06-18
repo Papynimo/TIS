@@ -16,10 +16,10 @@ Ce simulateur calcule la trajectoire d'une flèche selon :
 """)
 
 # --- Entrées utilisateur ---
-force_lbs       = st.slider("🎯 Force de l'arc (lbs)",        20, 80, 40)
-draw_length_in  = st.slider("📏 Allonge (inches)",           20, 30, 28)
+force_lbs       = st.slider("🎯 Force de l'arc (lbs)",        20, 80, 38)
+draw_length_in  = st.slider("📏 Allonge (inches)",           20, 30, 29)
 poids_fleche_g  = st.slider("🏹 Poids de la flèche (g)",     20, 50, 30)
-hauteur_depart  = st.slider("📐 Hauteur initiale (m)",       0.5, 2.0, 1.5)
+hauteur_depart  = st.slider("📐 Hauteur initiale (m)",       0.5, 2.0, 1.55)
 angle_deg       = st.slider("🧭 Angle de tir (°)",          -15, 45, 0, step=5)
 
 # --- Conversions physiques ---
@@ -47,23 +47,20 @@ vx       = v0 * np.cos(theta)
 vy       = v0 * np.sin(theta)
 t        = 0.0
 
-# --- Boucle jusqu'à impact ou limites fixes ---
-# On boucle tant que la flèche est au-dessus du sol et dans la limite de temps (6s max)
-while y_vals[-1] >= 0 and t < 6.0:
-    # Calcul des accélérations
+# --- Boucle jusqu'à impact ---
+# Simule tant que la flèche est en l'air (sécurité t_max=20s)
+t_max = 20.0
+while y_vals[-1] >= 0 and t < t_max:
     v   = np.hypot(vx, vy)
     Fd  = 0.5 * rho * Cd * surface * v**2
     ax  = - (Fd * vx / v) / masse_kg
     ay  = -g - (Fd * vy / v) / masse_kg
-    # Mise à jour des vitesses
     vx += ax * dt
     vy += ay * dt
-    # Intégration des positions
     x_prev, y_prev = x_vals[-1], y_vals[-1]
     x_new = x_prev + vx * dt
     y_new = y_prev + vy * dt
-    t     += dt
-    # Détection de l'impact au sol
+    t    += dt
     if y_new < 0:
         # interpolation linéaire pour l'impact
         dx    = x_new - x_prev
@@ -73,17 +70,10 @@ while y_vals[-1] >= 0 and t < 6.0:
         x_vals.append(x_imp)
         y_vals.append(0.0)
         break
-    # ajout du point
     x_vals.append(x_new)
     y_vals.append(y_new)
 
 # --- Résultats ---
-distance = x_vals[-1]
-temps_vol = t
-distance = x_vals[-1]
-temps_vol = t
-distance = x_vals[-1]
-temps_vol = t
 distance = x_vals[-1]
 temps_vol = t
 
