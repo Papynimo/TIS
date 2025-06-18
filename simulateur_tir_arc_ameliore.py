@@ -17,10 +17,10 @@ Ce simulateur calcule la trajectoire d'une flèche selon :
 """)
 
 # Entrées utilisateur
-force_lbs = st.slider("🎯 Force de l’arc (livres)", 20, 80, 40)
-draw_length_in = st.slider("📏 Allonge de l’archer (pouces)", 24, 32, 28)
+force_lbs = st.slider("🎯 Force de l’arc (livres)", 20, 80, 38)
+draw_length_in = st.slider("📏 Allonge de l’archer (pouces)", 24, 32, 29)
 poids_fleche_g = st.slider("🏹 Poids de la flèche (grammes)", 20, 50, 30)
-hauteur_depart = st.slider("📐 Hauteur initiale de tir (m)", 0.5, 2.0, 1.5)
+hauteur_depart = st.slider("📐 Hauteur initiale de tir (m)", 0.5, 2.0, 1.55)
 angle = st.slider("🧭 Angle de tir (°)", -15, 45, 0, step=5)
 vent = st.slider("🌬️ Vent frontal (m/s, positif = de face)", -10, 10, 0)
 
